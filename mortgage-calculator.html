@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор ипотеки</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .calculator { background: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; }
+        button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+        #result { margin-top: 20px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Калькулятор ипотеки</h1>
+        <label for="loan-amount">Сумма кредита (руб):</label>
+        <input type="number" id="loan-amount" value="2000000">
+        
+        <label for="interest-rate">Процентная ставка (%):</label>
+        <input type="number" id="interest-rate" value="7.5" step="0.1">
+        
+        <label for="loan-term">Срок кредита (лет):</label>
+        <input type="number" id="loan-term" value="10">
+        
+        <button onclick="calculate()">Рассчитать</button>
+        
+        <div id="result"></div>
+        <table id="payment-table">
+            <thead>
+                <tr>
+                    <th>Месяц</th>
+                    <th>Платеж</th>
+                    <th>Основной долг</th>
+                    <th>Проценты</th>
+                    <th>Остаток</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        function calculate() {
+            const amount = parseFloat(document.getElementById('loan-amount').value);
+            const rate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12;
+            const term = parseFloat(document.getElementById('loan-term').value) * 12;
+            
+            // Формула аннуитетного платежа
+            const monthlyPayment = (amount * rate * Math.pow(1 + rate, term)) / (Math.pow(1 + rate, term) - 1);
+            const totalPayment = monthlyPayment * term;
+            const totalInterest = totalPayment - amount;
+            
+            // Вывод результата
+            document.getElementById('result').innerHTML = `
+                <p>Ежемесячный платеж: <strong>${monthlyPayment.toFixed(2)} руб</strong></p>
+                <p>Общая переплата: <strong>${totalInterest.toFixed(2)} руб</strong></p>
+                <p>Общая сумма выплат: <strong>${totalPayment.toFixed(2)} руб</strong></p>
+            `;
+            
+            // Генерация графика платежей
+            let balance = amount;
+            let tableHtml = '';
+            for (let month = 1; month <= term; month++) {
+                const interest = balance * rate;
+                const principal = monthlyPayment - interest;
+                balance -= principal;
+                
+                tableHtml += `
+                    <tr>
+                        <td>${month}</td>
+                        <td>${monthlyPayment.toFixed(2)}</td>
+                        <td>${principal.toFixed(2)}</td>
+                        <td>${interest.toFixed(2)}</td>
+                        <td>${balance.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            document.querySelector('#payment-table tbody').innerHTML = tableHtml;
+        }
+        
+        // Расчет при загрузке страницы
+        window.onload = calculate;
+    </script>
+</body>
+</html>
